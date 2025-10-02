@@ -33,7 +33,7 @@ export class AssetSearchCommandHandler extends BaseCommandHandler {
             default:
                 return {
                     success: false,
-                    error: `Unknown action: ${action}. Supported actions: search, findByName, findByType`
+                    error: `【UnityError】 Unknown action: ${action}. Supported actions: search, findByName, findByType`
                 };
         }
     }

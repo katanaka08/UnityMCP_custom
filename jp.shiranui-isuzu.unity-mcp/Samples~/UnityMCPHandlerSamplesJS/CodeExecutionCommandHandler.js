@@ -29,7 +29,7 @@ export class CodeExecutionCommandHandler extends BaseCommandHandler {
             default:
                 return {
                     success: false,
-                    error: `Unknown action: ${action}. Supported actions: execute`
+                    error: `【UnityError】 Unknown action: ${action}. Supported actions: execute`
                 };
         }
     }

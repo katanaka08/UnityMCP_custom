@@ -647,7 +647,7 @@ namespace UnityMCP.Editor.Core
                     var errorResponse = new JObject
                     {
                         ["status"] = "error",
-                        ["message"] = e.Message
+                        ["message"] = "【UnityLog】" + e.Message
                     };
 
                     var errorJson = JsonConvert.SerializeObject(errorResponse);
@@ -678,7 +678,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Missing command in resource request"
+                    ["message"] = "【UnityLog】" + "Missing command in resource request"
                 };
             }
 
@@ -688,7 +688,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = $"Invalid command format: {command}. Expected format: 'prefix.action'"
+                    ["message"] = "【UnityLog】" + $"Invalid command format: {command}. Expected format: 'prefix.action'"
                 };
             }
 
@@ -702,7 +702,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Missing resource name",
+                    ["message"] = "【UnityLog】" + "Missing resource name",
                     ["id"] = id
                 };
             }
@@ -723,7 +723,7 @@ namespace UnityMCP.Editor.Core
                     result = new JObject
                     {
                         ["status"] = "error",
-                        ["message"] = $"Error in {resourceName}: {e.Message}",
+                        ["message"] = "【UnityLog】" + $"Error in {resourceName}: {e.Message}",
                         ["id"] = id
                     };
                 }
@@ -740,7 +740,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Timed out waiting for resource fetch on main thread",
+                    ["message"] = "【UnityLog】" + "Timed out waiting for resource fetch on main thread",
                     ["id"] = id
                 };
             }
@@ -751,7 +751,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Failed to fetch resource in main thread",
+                    ["message"] = "【UnityLog】" + "Failed to fetch resource in main thread",
                     ["id"] = id
                 };
             }
@@ -811,7 +811,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Missing command type",
+                    ["message"] = "【UnityLog】" + "Missing command type",
                     ["id"] = id
                 };
             }
@@ -832,7 +832,7 @@ namespace UnityMCP.Editor.Core
                         result = new JObject
                         {
                             ["status"] = "error",
-                            ["message"] = $"Invalid command format: {commandType}. Expected format: 'prefix.action'",
+                            ["message"] = "【UnityLog】" + $"Invalid command format: {commandType}. Expected format: 'prefix.action'",
                             ["id"] = id
                         };
                     }
@@ -853,7 +853,7 @@ namespace UnityMCP.Editor.Core
                             result = new JObject
                             {
                                 ["status"] = "error",
-                                ["message"] = $"Command prefix '{prefix}' is disabled",
+                                ["message"] = "【UnityLog】" + $"Command prefix '{prefix}' is disabled",
                                 ["id"] = id
                             };
                         }
@@ -862,7 +862,7 @@ namespace UnityMCP.Editor.Core
                             result = new JObject
                             {
                                 ["status"] = "error",
-                                ["message"] = $"Unknown command prefix: {prefix}",
+                                ["message"] = "【UnityLog】" + $"Unknown command prefix: {prefix}",
                                 ["id"] = id
                             };
                         }
@@ -873,7 +873,7 @@ namespace UnityMCP.Editor.Core
                     result = new JObject
                     {
                         ["status"] = "error",
-                        ["message"] = $"Error in {commandType}: {e.Message}",
+                        ["message"] = "【UnityLog】" + $"Error in {commandType}: {e.Message}",
                         ["id"] = id
                     };
                 }
@@ -890,7 +890,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Timed out waiting for command execution on main thread",
+                    ["message"] = "【UnityLog】" + "Timed out waiting for command execution on main thread",
                     ["id"] = id
                 };
             }
@@ -901,7 +901,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "Failed to execute command in main thread",
+                    ["message"] = "【UnityLog】" + "Failed to execute command in main thread",
                     ["id"] = id
                 };
             }
@@ -927,7 +927,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = $"Resource not found: {resourceName}"
+                    ["message"] = "【UnityLog】" + $"Resource not found: {resourceName}"
                 };
             }
 
@@ -936,7 +936,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = $"Resource '{resourceName}' is disabled"
+                    ["message"] = "【UnityLog】" + $"Resource '{resourceName}' is disabled"
                 };
             }
 
@@ -959,7 +959,7 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = $"Error fetching resource: {ex.Message}"
+                    ["message"] = "【UnityLog】" + $"Error fetching resource: {ex.Message}"
                 };
             }
         }

@@ -84,7 +84,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = "LogEntries reflection initialization failed"
+                    ["error"] = "【UnityError】" + "LogEntries reflection initialization failed"
                 };
             }
 
@@ -94,7 +94,7 @@ namespace UnityMCP.Editor.Handlers
                 "getcount" => this.GetLogCount(),
                 "clear" => this.ClearLogs(),
                 "setfilter" => this.SetFilter(parameters),
-                _ => new JObject { ["success"] = false, ["error"] = $"Unknown action: {action}. Supported actions: getLogs, getCount, clear, setFilter" }
+                _ => new JObject { ["success"] = false, ["error"] = "【UnityError】" + $"Unknown action: {action}. Supported actions: getLogs, getCount, clear, setFilter" }
             };
         }
 
@@ -155,7 +155,7 @@ namespace UnityMCP.Editor.Handlers
                         logs.Add(new JObject
                         {
                             ["mode"] = mode,
-                            ["message"] = message,
+                            ["message"] = "【UnityLog】" + message,
                             ["file"] = file,
                             ["line"] = line,
                             ["column"] = column,
@@ -186,7 +186,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = ex.Message
+                    ["error"] = "【UnityError】" + ex.Message
                 };
             }
         }
@@ -227,7 +227,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = ex.Message
+                    ["error"] = "【UnityError】" + ex.Message
                 };
             }
         }
@@ -252,7 +252,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = ex.Message
+                    ["error"] = "【UnityError】" + ex.Message
                 };
             }
         }

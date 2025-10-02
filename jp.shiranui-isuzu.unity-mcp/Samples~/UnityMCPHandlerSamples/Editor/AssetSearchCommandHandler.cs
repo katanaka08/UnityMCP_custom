@@ -35,7 +35,7 @@ namespace UnityMCPHandlerSamples.Editor
                 "search" => this.SearchAssets(parameters),
                 "findbyname" => this.FindAssetsByName(parameters),
                 "findbytype" => this.FindAssetsByType(parameters),
-                _ => new JObject { ["success"] = false, ["error"] = $"Unknown action: {action}. Supported actions are 'search', 'findbyname', and 'findbytype'." }
+                _ => new JObject { ["success"] = false, ["error"] = $"【UnityError】 Unknown action: {action}. Supported actions are 'search', 'findbyname', and 'findbytype'." }
             };
         }
 

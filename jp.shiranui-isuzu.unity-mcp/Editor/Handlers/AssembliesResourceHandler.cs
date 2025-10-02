@@ -72,7 +72,7 @@ namespace UnityMCP.Editor.Resources
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = $"Error retrieving assemblies: {ex.Message}"
+                    ["error"] = "【UnityError】" + $"Error retrieving assemblies: {ex.Message}"
                 };
             }
         }

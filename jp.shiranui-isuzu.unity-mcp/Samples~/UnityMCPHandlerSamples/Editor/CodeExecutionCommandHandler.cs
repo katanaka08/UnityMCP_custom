@@ -49,7 +49,7 @@ namespace UnityMCPHandlerSamples.Editor
                 _ => new JObject
                 {
                     ["success"] = false,
-                    ["error"] = $"Unknown action: {action}. Supported actions are 'execute' and 'evaluate'."
+                    ["error"] = $"【UnityError】 Unknown action: {action}. Supported actions are 'execute' and 'evaluate'."
                 }
             };
         }

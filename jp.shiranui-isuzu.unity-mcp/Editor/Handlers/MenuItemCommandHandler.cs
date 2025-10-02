@@ -34,7 +34,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = $"Unknown action: {action}. Only 'execute' is supported."
+                    ["error"] = "【UnityError】" + $"Unknown action: {action}. Only 'execute' is supported."
                 };
             }
 
@@ -54,7 +54,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = "MenuItem parameter is required"
+                    ["error"] = "【UnityError】" + "MenuItem parameter is required"
                 };
             }
 
@@ -73,7 +73,7 @@ namespace UnityMCP.Editor.Handlers
                 return new JObject
                 {
                     ["success"] = false,
-                    ["error"] = ex.Message
+                    ["error"] = "【UnityError】" + ex.Message
                 };
             }
         }
