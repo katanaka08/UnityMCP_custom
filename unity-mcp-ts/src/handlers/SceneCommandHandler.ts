@@ -35,7 +35,7 @@ export abstract class SceneCommandHandler extends BaseCommandHandler {
             };
         }
 
-        return this.executeMenuItem(action, parameters);
+        return this.Command(action, parameters);
     }
 
     /**
@@ -69,7 +69,7 @@ export abstract class SceneCommandHandler extends BaseCommandHandler {
      * @param parameters The parameters containing the menu item name.
      * @returns A Promise that resolves to a JSON object indicating success or failure.
      */
-    private async executeMenuItem(action: string, parameters: JObject): Promise<JObject> {
+    private async Command(action: string, parameters: JObject): Promise<JObject> {
         const mcpCommand = parameters.command as string;
         if (!mcpCommand) {
             return {
