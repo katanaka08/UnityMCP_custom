@@ -267,8 +267,9 @@ namespace UnityMCP.Editor.Installer
         {
             GUILayout.Label("3. MCP Configuration", this.subHeaderStyle);
 
+            // gitでリポジトリをDLして使いたい場合もあるので、"UnityMCP/build"に固定するのはよくない
+            var installDir = Path.Combine(this.installPath, "build");
             // Path to index.js
-            var installDir = Path.Combine(this.installPath, "UnityMCP/build");
             var clientJsPath = Path.Combine(installDir, "index.js").Replace("/", "\\");
             var displayPath = clientJsPath;
 
