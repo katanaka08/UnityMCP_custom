@@ -490,11 +490,37 @@ namespace UnityMCP.Editor.Core
                     {
                         Debug.LogWarning($"Failed to connect to MCP TypeScript server at {this.host}:{this.port}. Will retry...");
                         this.isReconnecting = true;
+                        DisplayDialog(
+                            "MCP接続エラー",
+                            "MCPサーバーへの接続に失敗しました。ターミナルから'node build/index.js'を起動してあるか確認してください。",
+                            "OK"
+                        );
                     }
 
                     // Increase reconnect delay with exponential backoff (capped)
                     this.currentReconnectDelay = Math.Min(this.currentReconnectDelay * 2, this.maxReconnectDelay);
                 }
+            }
+            catch (SocketException se)
+            {
+                if (se.SocketErrorCode == SocketError.ConnectionRefused)
+                {
+                    DisplayDialog(
+                        "MCP Connection Error",
+                        $"Connection to {this.host}:{this.port} was refused.\n\n" +
+                        "This might be because the MCP server is not running, or the port is already in use by another process.\n\n" +
+                        "You can check for processes using the port with this command in your terminal:\n" +
+                        $"lsof -i :{this.port}\n\n" +
+                        "If you find a process, you can terminate it using its PID:\n" +
+                        "kill -9 <PID>\n" +
+                        $"つまり、lsof -i :{this.port}でポートを使用している外部プロセスを探し、kill -9 <PID>で片付けましょう\n",
+                        "OK"
+                    );
+                }
+                Debug.LogError($"Error connecting to MCP TypeScript server: {se.Message}");
+                this.client?.Close();
+                this.client = null;
+                this.isReconnecting = true;
             }
             catch (Exception e)
             {
@@ -507,6 +533,14 @@ namespace UnityMCP.Editor.Core
             {
                 this.isConnecting = false;
             }
+        }
+
+        private void DisplayDialog(string title, string message, string okLabel)
+        {
+            this.ExecuteOnMainThread(() =>
+            {
+                EditorUtility.DisplayDialog(title, message, okLabel);
+            });
         }
 
         /// <summary>
