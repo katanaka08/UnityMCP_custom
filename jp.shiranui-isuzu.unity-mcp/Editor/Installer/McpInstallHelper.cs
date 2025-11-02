@@ -66,8 +66,13 @@ namespace UnityMCP.Editor.Installer
             try
             {
                 var process = new Process();
+#if UNITY_EDITOR_OSX
+                process.StartInfo.FileName = "/bin/zsh";
+                process.StartInfo.Arguments = "-c \"source ~/.nvm/nvm.sh && node --version\"";
+#else
                 process.StartInfo.FileName = "node";
                 process.StartInfo.Arguments = "--version";
+#endif
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
