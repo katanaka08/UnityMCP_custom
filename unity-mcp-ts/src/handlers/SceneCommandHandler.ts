@@ -1,4 +1,4 @@
-﻿import { IMcpToolDefinition } from "../core/interfaces/ICommandHandler.js";
+import { IMcpToolDefinition } from "../core/interfaces/ICommandHandler.js";
 import { JObject } from "../types/index.js";
 import { z } from "zod";
 import { BaseCommandHandler } from "../core/BaseCommandHandler.js";
@@ -47,9 +47,9 @@ export abstract class SceneCommandHandler extends BaseCommandHandler {
 
         // Add menu_execute tool
         tools.set("scene_command", {
-            description: "Executes a Unity Editor scene mcp command",
+            description: "Processing scenes, retrieving hierarchy information, etc.",
             parameterSchema: {
-                command: z.string().describe("The menu item path to execute")
+                command: z.string().describe("The command to execute on the scene. e.g., 'get_hierarchy'")
             },
             annotations: {
                 title: "Execute scene mcp command",

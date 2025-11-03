@@ -490,11 +490,6 @@ namespace UnityMCP.Editor.Core
                     {
                         Debug.LogWarning($"Failed to connect to MCP TypeScript server at {this.host}:{this.port}. Will retry...");
                         this.isReconnecting = true;
-                        DisplayDialog(
-                            "MCP接続エラー",
-                            "MCPサーバーへの接続に失敗しました。ターミナルから'node build/index.js'を起動してあるか確認してください。",
-                            "OK"
-                        );
                     }
 
                     // Increase reconnect delay with exponential backoff (capped)
