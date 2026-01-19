@@ -1,0 +1,16 @@
+{
+    "name": "MCP_CustomHandler",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3195ce87e0864735b423ab7a90c4c3fb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
