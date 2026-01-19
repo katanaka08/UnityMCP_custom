@@ -96,30 +96,15 @@ namespace MCP_CustomHandler
 
         private GameObject CreateTMPInputField(string name, Transform parent)
         {
-            var go = DefaultControls.CreateInputField(new DefaultControls.Resources()); // Use default for structure
-            go.name = name;
+            var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            
-            // Convert to TMP InputField
-            Object.DestroyImmediate(go.GetComponent<InputField>());
-            Object.DestroyImmediate(go.transform.Find("Placeholder").gameObject);
-            Object.DestroyImmediate(go.transform.Find("Text").gameObject);
+            var rect = go.AddComponent<RectTransform>();
+            go.AddComponent<CanvasRenderer>();
+            var image = go.AddComponent<Image>();
+            image.type = Image.Type.Sliced;
 
             var tmpInput = go.AddComponent<TMP_InputField>();
             
-            // Placeholder
-            var placeholderGo = new GameObject("Placeholder");
-            placeholderGo.transform.SetParent(go.transform, false);
-            var placeholderText = placeholderGo.AddComponent<TextMeshProUGUI>();
-            placeholderText.text = "Enter prompt...";
-            placeholderText.fontStyle = FontStyles.Italic;
-            placeholderText.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            placeholderText.alignment = TextAlignmentOptions.Left;
-            var placeholderRect = placeholderGo.GetComponent<RectTransform>();
-            placeholderRect.anchorMin = Vector2.zero;
-            placeholderRect.anchorMax = Vector2.one;
-            placeholderRect.sizeDelta = Vector2.zero;
-
             // Text Area
             var textAreaGo = new GameObject("Text Area");
             textAreaGo.transform.SetParent(go.transform, false);
@@ -127,18 +112,31 @@ namespace MCP_CustomHandler
             var textAreaRect = textAreaGo.GetComponent<RectTransform>();
             textAreaRect.anchorMin = Vector2.zero;
             textAreaRect.anchorMax = Vector2.one;
-            textAreaRect.sizeDelta = Vector2.zero;
+            textAreaRect.offsetMin = new Vector4(10, 5);
+            textAreaRect.offsetMax = new Vector4(-10, -5);
 
             // Text
             var textGo = new GameObject("Text");
             textGo.transform.SetParent(textAreaGo.transform, false);
             var textComponent = textGo.AddComponent<TextMeshProUGUI>();
             textComponent.color = Color.black;
-            textComponent.alignment = TextAlignmentOptions.Left;
+            textComponent.alignment = TextAlignmentOptions.TopLeft;
             var textRect = textGo.GetComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
             textRect.sizeDelta = Vector2.zero;
+
+            // Placeholder
+            var placeholderGo = new GameObject("Placeholder");
+            placeholderGo.transform.SetParent(textAreaGo.transform, false);
+            var placeholderText = placeholderGo.AddComponent<TextMeshProUGUI>();
+            placeholderText.text = "Enter prompt...";
+            placeholderText.fontStyle = FontStyles.Italic;
+            placeholderText.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            var placeholderRect = placeholderGo.GetComponent<RectTransform>();
+            placeholderRect.anchorMin = Vector2.zero;
+            placeholderRect.anchorMax = Vector2.one;
+            placeholderRect.sizeDelta = Vector2.zero;
 
             tmpInput.textViewport = textAreaRect;
             tmpInput.textComponent = textComponent;
