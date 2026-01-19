@@ -92,7 +92,7 @@ export class UnityConnection extends EventEmitter {
                     });
 
                     // Set up data handling
-                    socket.on('data', (data) => this.handleClientData(clientId, data));
+                    socket.on('data', (data) => this.handleClientData(clientId, data as Buffer));
 
                     // Handle disconnection
                     socket.on('close', () => {
