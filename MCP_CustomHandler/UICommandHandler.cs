@@ -16,7 +16,7 @@ namespace MCP_CustomHandler
 
         protected override JToken ExecuteAction(string action, JObject parameters)
         {
-            switch (action.toLowerCase())
+            switch (action.ToLower())
             {
                 case "create_base":
                     return CreateUIBase();
