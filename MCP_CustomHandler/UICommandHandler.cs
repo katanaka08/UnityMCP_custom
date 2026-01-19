@@ -14,6 +14,13 @@ namespace MCP_CustomHandler
         public override string CommandPrefix => "ui";
         public override string Description => "Handles UI creation and manipulation in Unity.";
 
+        [MenuItem("unity-mcp/ui/CreateBaseUI")]
+        public static void CreateBaseUIMenu()
+        {
+            var instance = new UICommandHandler();
+            instance.CreateUIBase();
+        }
+
         protected override JToken ExecuteAction(string action, JObject parameters)
         {
             switch (action.ToLower())
