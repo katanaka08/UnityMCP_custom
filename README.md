@@ -44,7 +44,52 @@ Unity と Model Context Protocol (MCP) を統合するための拡張可能な�
 
 ### Claude Desktop との連携
 
-#### インストーラーを使う場合
+#### 🆕 v2.0: HTTP Transport（推奨）
+
+Unity MCP v2.0以降では、**HTTP transport**がデフォルトになりました。複数のMCPクライアントが同時に接続できる多対1のアーキテクチャを実現します。
+
+##### サーバーの起動
+
+1. TypeScriptサーバーをインストール（インストーラーまたは手動）
+2. サーバーを起動:
+   ```bash
+   cd unity-mcp-ts
+   npm start
+   ```
+   デフォルトで `http://127.0.0.1:44682` でリッスンします
+
+3. 環境変数で設定をカスタマイズ（オプション）:
+   ```bash
+   MCP_HTTP_HOST=127.0.0.1 MCP_HTTP_PORT=44682 npm start
+   ```
+
+##### Claude Desktopの設定
+
+Claude Desktop の設定ファイル `claude_desktop_config.json` を開き、以下を追加:
+
+```json
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "url": "http://localhost:44682/mcp"
+    }
+  }
+}
+```
+
+Claude Desktopを再起動すると、自動的にHTTPエンドポイントに接続します。
+
+##### 環境変数
+
+| 変数 | デフォルト | 説明 |
+|------|-----------|------|
+| `MCP_TRANSPORT` | `http` | Transport type: `http` or `stdio` (deprecated) |
+| `MCP_HTTP_HOST` | `127.0.0.1` | HTTPサーバーのバインドアドレス |
+| `MCP_HTTP_PORT` | `44682` | HTTPサーバーのポート番号 |
+| `MCP_HOST` | `127.0.0.1` | Unity TCPホスト（既存） |
+| `MCP_PORT` | `27182` | Unity TCPポート（既存） |
+
+#### 📦 インストーラーを使う場合
 
 Unity MCPにはTypeScriptクライアントの簡単なインストールと設定のためのツールが含まれています。
 
@@ -54,36 +99,38 @@ Unity MCPにはTypeScriptクライアントの簡単なインストールと設�
    - Node.jsがインストールされていることを確認します（インストールされていない場合はダウンロードリンクが表示されます）
    - 最新バージョンを取得するには「Latest」ボタンをクリックします
    - インストール先フォルダを選択し、「Download and Install TypeScript Client」ボタンをクリックします
-   - インストールが完了したら、「Configuration Preview」セクションを開いて設定JSONをクリップボードにコピーします
-4. Claude Desktopの設定を行います：
-   - Claude Desktopを開きます
-   - 「Claude」メニューをクリックし、「Settings...」を選択します
-   - 「Developer」タブをクリックし、「Edit Config」ボタンをクリックします
-   - コピーした設定を貼り付けて保存します
-5. Claude Desktopを再起動すると設定が適用されます
+   - インストールが完了したら、上記のHTTP設定をClaude Desktopに追加します
+4. Claude Desktopを再起動すると設定が適用されます
 
-これで、Claude Desktopが自動的にUnity MCPクライアントに接続し、Unity Editorとのシームレスな連携が可能になります。
+これで、Claude Desktopが自動的にUnity MCPサーバーに接続し、Unity Editorとのシームレスな連携が可能になります。
 
-#### 手動でインストールする場合
+#### ⚠️ stdio transport（非推奨 - v3.0で削除予定）
 
-1. リリースページから最新のZIPファイルをダウンロードして解凍します
-2. `build/index.js` ファイルのフルパスを控えておきます
-3. Claude Desktop の設定ファイル `claude_desktop_config.json` を開きます
-4. 以下の内容を追加して保存します:
+**注意**: stdio transportは非推奨です。新規インストールではHTTP transportを使用してください。
 
-```json
-{
-   "mcpServers": {
-      "unity-mcp": {
+既存のstdio設定を使い続ける場合:
+
+1. 環境変数を設定:
+   ```bash
+   MCP_TRANSPORT=stdio npm start
+   ```
+
+2. Claude Desktop設定（従来の方法）:
+   ```json
+   {
+     "mcpServers": {
+       "unity-mcp": {
          "command": "node",
-         "args": [
-            "path/to/index.js"
-         ]
-      }
+         "args": ["path/to/index.js"],
+         "env": {
+           "MCP_TRANSPORT": "stdio"
+         }
+       }
+     }
    }
-}
-```
-※ `path/to/index.js` は実際のパスに置き換えてください（Windowsの場合はバックスラッシュをエスケープ"\\\\"するか、フォワードスラッシュ"/"を使用）
+   ```
+
+stdio transportは複数のMCPクライアントから同時に接続できない制限があります。HTTP transportへの移行を強く推奨します。
 
 ## 🔌 アーキテクチャ
 

@@ -7,6 +7,7 @@ import { CommandRegistry } from "./core/CommandRegistry.js";
 import { ResourceRegistry } from "./core/ResourceRegistry.js";
 import { PromptRegistry } from "./core/PromptRegistry.js";
 import { registerUnityClientTools } from "./core/UnityClientHandler.js";
+import { HttpMcpServer } from "./transport/HttpServer.js";
 
 /**
  * Main entry point for the MCP server application.
@@ -83,13 +84,30 @@ async function main() {
       console.error(`[INFO] Active Unity client changed to: ${client.clientId}`);
     });
 
-    // Create transport using standard I/O for MCP communication
-    const transport = new StdioServerTransport();
+    // Get transport configuration from environment variables
+    const transportType = process.env.MCP_TRANSPORT || 'http';
+    const httpHost = process.env.MCP_HTTP_HOST || '127.0.0.1';
+    const httpPort = parseInt(process.env.MCP_HTTP_PORT || '44682', 10);
 
-    // Connect the server to the transport
-    await mcpServer.connect(transport);
+    // Select transport based on configuration
+    if (transportType === 'stdio') {
+      // Deprecated: stdio transport
+      console.error('[WARN] ========================================');
+      console.error('[WARN] stdio transport is DEPRECATED');
+      console.error('[WARN] It will be removed in v3.0');
+      console.error('[WARN] Please migrate to HTTP transport:');
+      console.error('[WARN]   MCP_TRANSPORT=http npm start');
+      console.error('[WARN] ========================================');
 
-    console.error("[INFO] Unity MCP Server running on stdio");
+      const transport = new StdioServerTransport();
+      await mcpServer.connect(transport);
+      console.error("[INFO] Unity MCP Server running on stdio (deprecated)");
+    } else {
+      // Default: HTTP transport
+      const httpServer = new HttpMcpServer(mcpServer);
+      await httpServer.start(httpHost, httpPort);
+      console.error(`[INFO] Unity MCP Server running on HTTP: http://${httpHost}:${httpPort}`);
+    }
   } catch (error) {
     console.error(`[ERROR] Failed to start MCP server: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
