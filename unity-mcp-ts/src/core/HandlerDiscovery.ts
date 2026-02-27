@@ -74,10 +74,13 @@ export class HandlerDiscovery {
             // Get all files in the directory
             const files = await fs.readdir(handlersDir);
 
-            // Filter for .js files (assuming TypeScript compiled to JS)
-            const jsFiles = files.filter(file => file.endsWith('.js'));
+            // Filter for .js and .ts files (support both compiled JS and direct TS execution)
+            const handlerFiles = files.filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 
-            for (const file of jsFiles) {
+            console.error(`[DEBUG] Handlers directory: ${handlersDir}`);
+            console.error(`[DEBUG] Found ${handlerFiles.length} handler files: ${handlerFiles.join(', ')}`);
+
+            for (const file of handlerFiles) {
                 try {
                     // Dynamic import for ES modules
                     const module = await import(`../handlers/${file}`);

@@ -6,7 +6,7 @@ import { BaseCommandHandler } from "../core/BaseCommandHandler.js";
 /**
  * Command handler for accessing and managing Unity Console logs.
  */
-export abstract class ConsoleCommandHandler extends BaseCommandHandler {
+export class ConsoleCommandHandler extends BaseCommandHandler {
     /**
      * Gets the command prefix for this handler.
      */
@@ -27,16 +27,16 @@ export abstract class ConsoleCommandHandler extends BaseCommandHandler {
      * @param parameters The parameters for the command.
      * @returns A Promise that resolves to a JSON object containing the execution result.
      */
-    public async execute(action: string, parameters: JObject): Promise<JObject> {
+    protected async executeCommand(action: string, parameters: JObject): Promise<JObject> {
         switch (action.toLowerCase()) {
             case "getlogs":
-                return this.getLogs(parameters);
+                return await this.sendUnityRequest(`${this.commandPrefix}.getLogs`, parameters);
             case "getcount":
-                return this.getLogCount();
+                return await this.sendUnityRequest(`${this.commandPrefix}.getCount`, {});
             case "clear":
-                return this.clearLogs();
+                return await this.sendUnityRequest(`${this.commandPrefix}.clear`, {});
             case "setfilter":
-                return this.setFilter(parameters);
+                return await this.sendUnityRequest(`${this.commandPrefix}.setFilter`, parameters);
             default:
                 return {
                     success: false,
@@ -108,107 +108,5 @@ export abstract class ConsoleCommandHandler extends BaseCommandHandler {
         });
 
         return tools;
-    }
-
-    /**
-     * Gets logs from the Unity Console.
-     * @param parameters Optional parameters for filtering logs.
-     * @returns A Promise that resolves to a JSON object containing the logs.
-     */
-    private async getLogs(parameters: JObject): Promise<JObject> {
-        try {
-            // First ensure we have a valid connection to Unity
-            await this.ensureUnityConnection();
-
-            // Forward the request to Unity
-            return await this.sendUnityRequest(
-                `${this.commandPrefix}.getLogs`,
-                parameters
-            );
-        } catch (ex) {
-            const errorMessage = ex instanceof Error ? ex.message : String(ex);
-            console.error(`Error getting logs: ${errorMessage}`);
-
-            return {
-                success: false,
-                error: errorMessage
-            };
-        }
-    }
-
-    /**
-     * Gets the count of logs by type.
-     * @returns A Promise that resolves to a JSON object containing the counts.
-     */
-    private async getLogCount(): Promise<JObject> {
-        try {
-            // First ensure we have a valid connection to Unity
-            await this.ensureUnityConnection();
-
-            // Forward the request to Unity
-            return await this.sendUnityRequest(
-                `${this.commandPrefix}.getCount`,
-                {}
-            );
-        } catch (ex) {
-            const errorMessage = ex instanceof Error ? ex.message : String(ex);
-            console.error(`Error getting log counts: ${errorMessage}`);
-
-            return {
-                success: false,
-                error: errorMessage
-            };
-        }
-    }
-
-    /**
-     * Clears all logs from the console.
-     * @returns A Promise that resolves to a JSON object indicating success or failure.
-     */
-    private async clearLogs(): Promise<JObject> {
-        try {
-            // First ensure we have a valid connection to Unity
-            await this.ensureUnityConnection();
-
-            // Forward the request to Unity
-            return await this.sendUnityRequest(
-                `${this.commandPrefix}.clear`,
-                {}
-            );
-        } catch (ex) {
-            const errorMessage = ex instanceof Error ? ex.message : String(ex);
-            console.error(`Error clearing logs: ${errorMessage}`);
-
-            return {
-                success: false,
-                error: errorMessage
-            };
-        }
-    }
-
-    /**
-     * Sets a filter on the console logs.
-     * @param parameters Parameters containing the filter text.
-     * @returns A Promise that resolves to a JSON object indicating success or failure.
-     */
-    private async setFilter(parameters: JObject): Promise<JObject> {
-        try {
-            // First ensure we have a valid connection to Unity
-            await this.ensureUnityConnection();
-
-            // Forward the request to Unity
-            return await this.sendUnityRequest(
-                `${this.commandPrefix}.setFilter`,
-                parameters
-            );
-        } catch (ex) {
-            const errorMessage = ex instanceof Error ? ex.message : String(ex);
-            console.error(`Error setting filter: ${errorMessage}`);
-
-            return {
-                success: false,
-                error: errorMessage
-            };
-        }
     }
 }

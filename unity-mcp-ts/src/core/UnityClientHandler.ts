@@ -16,9 +16,12 @@ export function registerUnityClientTools(server: McpServer): void {
         "Lists all connected Unity projects",
         {},
         async () => {
+            console.error("[DEBUG] unity_listClients called");
+
             // Get currently connected clients directly from the TCP connection
             // No need to clear and re-discover - TCP connections are already established
             const clients = connection.getConnectedClients();
+            console.error(`[DEBUG] Got ${clients.length} clients from connection`);
 
             // Filter out clients with invalid/unknown information
             const validClients = clients.filter(client => {
@@ -27,14 +30,18 @@ export function registerUnityClientTools(server: McpServer): void {
                 return info.productName && info.productName !== "Unknown" &&
                     info.productName !== "UnknownProject";
             });
+            console.error(`[DEBUG] Filtered to ${validClients.length} valid clients`);
 
             if (validClients.length === 0) {
-                return {
+                console.error("[DEBUG] No valid clients, returning 'No Unity projects' message");
+                const response = {
                     content: [{
-                        type: "text",
+                        type: "text" as const,
                         text: "No Unity projects are currently connected."
                     }]
                 };
+                console.error(`[DEBUG] Returning response: ${JSON.stringify(response)}`);
+                return response;
             }
 
             // Focus on project information in the display
@@ -50,12 +57,15 @@ export function registerUnityClientTools(server: McpServer): void {
                 responseText += '\n';
             });
 
-            return {
+            console.error(`[DEBUG] Built response text (${responseText.length} chars)`);
+            const response = {
                 content: [{
-                    type: "text",
+                    type: "text" as const,
                     text: responseText
                 }]
             };
+            console.error(`[DEBUG] Returning response (first 200 chars): ${JSON.stringify(response).substring(0, 200)}...`);
+            return response;
         }
     );
 

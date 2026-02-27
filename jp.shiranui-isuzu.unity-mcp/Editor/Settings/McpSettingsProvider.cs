@@ -446,9 +446,16 @@ namespace UnityMCP.Editor.Settings
                 // Initialize button
                 if (GUILayout.Button("Initialize MCP Client"))
                 {
-                    // Create and register the client
-                    this.mcpServer = new McpServer();
-                    McpServiceManager.Instance.RegisterService<McpServer>(this.mcpServer);
+                    // Reuse existing service if already registered, otherwise create and register
+                    if (McpServiceManager.Instance.TryGetService<McpServer>(out var existingServer))
+                    {
+                        this.mcpServer = existingServer;
+                    }
+                    else
+                    {
+                        this.mcpServer = new McpServer();
+                        McpServiceManager.Instance.RegisterService<McpServer>(this.mcpServer);
+                    }
                 }
             }
 

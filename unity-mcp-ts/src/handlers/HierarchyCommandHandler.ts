@@ -1,24 +1,24 @@
-﻿import { IMcpToolDefinition } from "../core/interfaces/ICommandHandler.js";
+import { IMcpToolDefinition } from "../core/interfaces/ICommandHandler.js";
 import { JObject } from "../types/index.js";
 import { z } from "zod";
 import { BaseCommandHandler } from "../core/BaseCommandHandler.js";
 
 /**
- * Command handler for executing Unity menu items.
+ * Command handler for accessing scene hierarchy information.
  */
-export class MenuItemCommandHandler extends BaseCommandHandler {
+export class HierarchyCommandHandler extends BaseCommandHandler {
     /**
      * Gets the command prefix for this handler.
      */
     public get commandPrefix(): string {
-        return "menu";
+        return "hierarchy";
     }
 
     /**
      * Gets the description of this command handler.
      */
     public get description(): string {
-        return "Executes Unity Editor menu items";
+        return "Access Unity scene hierarchy information";
     }
 
     /**
@@ -28,24 +28,24 @@ export class MenuItemCommandHandler extends BaseCommandHandler {
      * @returns A Promise that resolves to a JSON object containing the execution result.
      */
     protected async executeCommand(action: string, parameters: JObject): Promise<JObject> {
-        if (action.toLowerCase() !== "execute") {
+        if (action.toLowerCase() !== "command") {
             return {
                 success: false,
-                error: `Unknown action: ${action}. Only 'execute' is supported.`
+                error: `Unknown action: ${action}. Supported actions: 'command'`
             };
         }
 
-        const menuItemPath = parameters.menuItem as string;
-        if (!menuItemPath) {
+        const mcpCommand = parameters.command as string;
+        if (!mcpCommand) {
             return {
                 success: false,
-                error: "MenuItem parameter is required"
+                error: "command parameter is required"
             };
         }
 
         return await this.sendUnityRequest(
             `${this.commandPrefix}.${action}`,
-            { menuItem: menuItemPath }
+            { command: mcpCommand }
         );
     }
 
@@ -56,16 +56,16 @@ export class MenuItemCommandHandler extends BaseCommandHandler {
     public getToolDefinitions(): Map<string, IMcpToolDefinition> {
         const tools = new Map<string, IMcpToolDefinition>();
 
-        tools.set("menu_execute", {
-            description: "Executes a Unity Editor menu item",
+        tools.set("hierarchy_command", {
+            description: "Execute hierarchy commands: get_hierarchy, find_object, etc.",
             parameterSchema: {
-                menuItem: z.string().describe("The menu item path to execute")
+                command: z.string().describe("The command to execute. e.g., 'get_hierarchy'")
             },
             annotations: {
-                title: "Execute Menu Item",
-                readOnlyHint: false,
-                destructiveHint: true,
-                idempotentHint: false,
+                title: "Execute Hierarchy Command",
+                readOnlyHint: true,
+                destructiveHint: false,
+                idempotentHint: true,
                 openWorldHint: false
             }
         });

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"unity-mcp-ts\")",
+      "Bash(timeout 5 node \"c:\\\\Users\\\\katan\\\\work\\\\git\\\\UnityMCP_custom\\\\unity-mcp-ts\\\\build\\\\index.js\")",
+      "Bash(timeout 3 node \"c:\\\\Users\\\\katan\\\\work\\\\git\\\\UnityMCP_custom\\\\unity-mcp-ts\\\\build\\\\index.js\")",
+      "Bash(netstat -ano)",
+      "Bash(dir build)",
+      "Bash(npm run build)"
+    ]
+  }
+}
