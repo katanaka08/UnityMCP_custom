@@ -157,6 +157,32 @@ export function registerUnityClientTools(server: McpServer): void {
         }
     );
 
+    // Reset connection state (clear stuck requests)
+    server.tool(
+        "unity_resetConnection",
+        "Resets the MCP connection state by rejecting all pending requests. Use when Unity becomes unresponsive or commands are stuck.",
+        {
+            disconnectClients: z.boolean().optional().default(false).describe(
+                "If true, also disconnects all Unity clients (they will auto-reconnect)"
+            )
+        },
+        async (params) => {
+            const pendingCount = connection.getPendingRequestCount();
+            connection.resetConnection(params.disconnectClients);
+
+            const message = params.disconnectClients
+                ? `Connection reset complete. Cleared ${pendingCount} pending request(s) and disconnected all clients. Unity will auto-reconnect.`
+                : `Connection reset complete. Cleared ${pendingCount} pending request(s). Existing Unity connections preserved.`;
+
+            return {
+                content: [{
+                    type: "text" as const,
+                    text: message
+                }]
+            };
+        }
+    );
+
     // Get active client info
     server.tool(
         "unity_getActiveClient",

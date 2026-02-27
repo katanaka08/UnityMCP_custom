@@ -45,7 +45,7 @@ export class HierarchyCommandHandler extends BaseCommandHandler {
 
         return await this.sendUnityRequest(
             `${this.commandPrefix}.${action}`,
-            { command: mcpCommand }
+            { ...parameters, command: mcpCommand }
         );
     }
 
@@ -57,9 +57,10 @@ export class HierarchyCommandHandler extends BaseCommandHandler {
         const tools = new Map<string, IMcpToolDefinition>();
 
         tools.set("hierarchy_command", {
-            description: "Execute hierarchy commands: get_hierarchy, find_object, etc.",
+            description: "Execute hierarchy commands. Available: get_all_objects (list all scene objects), get_object (get component details by path). For get_object, pass 'path' parameter.",
             parameterSchema: {
-                command: z.string().describe("The command to execute. e.g., 'get_hierarchy'")
+                command: z.string().describe("The command to execute: 'get_all_objects' or 'get_object'"),
+                path: z.string().optional().describe("The hierarchy path of the object (for get_object). e.g., 'Communicator' or '/Canvas/Panel'")
             },
             annotations: {
                 title: "Execute Hierarchy Command",

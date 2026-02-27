@@ -22,6 +22,7 @@ namespace UnityMCP.Editor.Settings
         private GUIContent enabledIcon;
         private GUIContent disabledIcon;
         private Color defaultBackgroundColor;
+        private static bool isActivating;
 
         /// <summary>
         /// Creates and registers the MCP settings provider.
@@ -60,34 +61,53 @@ namespace UnityMCP.Editor.Settings
         /// <param name="rootElement">The root UI element.</param>
         public override void OnActivate(string searchContext, UnityEngine.UIElements.VisualElement rootElement)
         {
-            var settings = McpSettings.instance;
-            settings.hideFlags = HideFlags.HideAndDontSave & ~HideFlags.NotEditable;
-            UnityEditor.Editor.CreateCachedEditor(settings, null, ref this.editor);
+            // Guard against re-entrant calls during domain reload
+            // (Unity SettingsWindow can loop: RestoreSelection → ProviderChanged → RestoreSelection)
+            if (isActivating) return;
+            isActivating = true;
 
-            // Prepare styles
-            this.headerStyle = new GUIStyle(EditorStyles.boldLabel)
+            try
             {
-                fontSize = 14,
-                margin = new RectOffset(0, 0, 10, 5)
-            };
+                var settings = McpSettings.instance;
+                settings.hideFlags = HideFlags.HideAndDontSave & ~HideFlags.NotEditable;
+                UnityEditor.Editor.CreateCachedEditor(settings, null, ref this.editor);
 
-            this.subHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+                // Prepare styles
+                this.headerStyle = new GUIStyle(EditorStyles.boldLabel)
+                {
+                    fontSize = 14,
+                    margin = new RectOffset(0, 0, 10, 5)
+                };
+
+                this.subHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+                {
+                    fontSize = 12,
+                    margin = new RectOffset(0, 0, 5, 3)
+                };
+
+                this.descriptionStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    wordWrap = true
+                };
+
+                // Icons
+                this.enabledIcon = EditorGUIUtility.IconContent("TestPassed");
+                this.disabledIcon = EditorGUIUtility.IconContent("TestFailed");
+
+                // Store default background color for later use
+                this.defaultBackgroundColor = GUI.backgroundColor;
+
+                // Re-fetch server reference in case it was lost during domain reload
+                if (this.mcpServer == null)
+                {
+                    McpServiceManager.Instance.TryGetService<McpServer>(out var server);
+                    this.mcpServer = server;
+                }
+            }
+            finally
             {
-                fontSize = 12,
-                margin = new RectOffset(0, 0, 5, 3)
-            };
-
-            this.descriptionStyle = new GUIStyle(EditorStyles.miniLabel)
-            {
-                wordWrap = true
-            };
-
-            // Icons
-            this.enabledIcon = EditorGUIUtility.IconContent("TestPassed");
-            this.disabledIcon = EditorGUIUtility.IconContent("TestFailed");
-
-            // Store default background color for later use
-            this.defaultBackgroundColor = GUI.backgroundColor;
+                isActivating = false;
+            }
         }
 
         /// <summary>
@@ -96,6 +116,13 @@ namespace UnityMCP.Editor.Settings
         /// <param name="searchContext">The search context.</param>
         public override void OnGUI(string searchContext)
         {
+            // Styles may be null after domain reload if OnActivate was skipped
+            if (this.headerStyle == null)
+            {
+                this.OnActivate(searchContext, null);
+                if (this.headerStyle == null) return; // Still not ready
+            }
+
             EditorGUI.BeginChangeCheck();
 
             GUILayout.Label("TypeScript MCP Settings", this.headerStyle);

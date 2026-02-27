@@ -102,13 +102,19 @@ export class UnityConnection extends EventEmitter {
                         this.clientInfoMap.delete(clientId);
 
                         // Update active client if this was the active one
-                        if (this.activeClientId === clientId) {
+                        const wasActive = this.activeClientId === clientId;
+                        if (wasActive) {
                             this.activeClientId = this.clients.size > 0 ?
                                 [...this.clients.keys()][0] : null;
 
                             if (this.activeClientId) {
                                 console.error(`[INFO] New active client: ${this.activeClientId}`);
                             }
+                        }
+
+                        // Reject all pending requests if no clients remain
+                        if (!this.hasConnectedClients()) {
+                            this.rejectAllPendingRequests('Unity client disconnected');
                         }
 
                         this.emit('clientDisconnected', { clientId });
@@ -401,6 +407,14 @@ export class UnityConnection extends EventEmitter {
         return this.clients.size > 0;
     }
 
+    /**
+     * Gets the number of pending requests waiting for a response.
+     * @returns The number of pending requests.
+     */
+    public getPendingRequestCount(): number {
+        return this.pendingRequests.size;
+    }
+
     /** Default timeout for requests in milliseconds. */
     public static readonly DEFAULT_TIMEOUT_MS = 10000;
 
@@ -485,6 +499,52 @@ export class UnityConnection extends EventEmitter {
     }
 
     /**
+     * Rejects all pending requests with the given reason.
+     * @param reason The rejection reason message.
+     */
+    private rejectAllPendingRequests(reason: string): void {
+        const count = this.pendingRequests.size;
+        if (count === 0) return;
+
+        console.error(`[INFO] Rejecting ${count} pending request(s): ${reason}`);
+        for (const [id, { reject }] of this.pendingRequests) {
+            reject(new Error(reason));
+        }
+        this.pendingRequests.clear();
+    }
+
+    /**
+     * Resets the connection state by rejecting all pending requests and
+     * optionally disconnecting all Unity clients.
+     * Useful when the system gets into a stuck state.
+     * @param disconnectClients If true, also disconnects all Unity clients (default: false).
+     */
+    public resetConnection(disconnectClients: boolean = false): void {
+        console.error('[INFO] Resetting connection state...');
+
+        // Reject all pending requests
+        this.rejectAllPendingRequests('Connection reset');
+
+        // Clear data buffers
+        for (const [clientId] of this.clientDataBuffers) {
+            this.clientDataBuffers.set(clientId, '');
+        }
+
+        if (disconnectClients) {
+            for (const [clientId, socket] of this.clients.entries()) {
+                console.error(`[INFO] Disconnecting client: ${clientId}`);
+                socket.destroy();
+            }
+            this.clients.clear();
+            this.clientDataBuffers.clear();
+            this.clientInfoMap.clear();
+            this.activeClientId = null;
+        }
+
+        console.error('[INFO] Connection state reset complete');
+    }
+
+    /**
      * Stops the server and closes all connections.
      */
     public stop(): void {
@@ -509,9 +569,6 @@ export class UnityConnection extends EventEmitter {
         }
 
         // Reject all pending requests
-        for (const [id, { reject }] of this.pendingRequests) {
-            reject(new Error('Connection closed'));
-            this.pendingRequests.delete(id);
-        }
+        this.rejectAllPendingRequests('Connection closed');
     }
 }

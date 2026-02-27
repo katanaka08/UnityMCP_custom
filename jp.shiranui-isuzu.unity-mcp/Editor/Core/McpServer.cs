@@ -616,86 +616,106 @@ namespace UnityMCP.Editor.Core
         {
             // Add incoming data to any incomplete data from previous receives
             var fullData = this.incompleteData + data;
-            string commandId = null;
 
-            try
+            // Split by newline to handle multiple messages in a single TCP read
+            var lines = fullData.Split('\n');
+
+            for (var i = 0; i < lines.Length; i++)
             {
-                // Try to parse the data as JSON
-                var command = JObject.Parse(fullData);
-                this.incompleteData = ""; // Reset incomplete data if successful
+                var line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line)) continue;
 
-                // Extract ID early so it's available in catch blocks
-                commandId = command["id"]?.ToString();
+                // If this is the last segment and doesn't end with a complete message,
+                // buffer it for the next receive
+                var isLastSegment = i == lines.Length - 1;
 
-                if (DetailedLogs)
+                string commandId = null;
+
+                try
                 {
-                    Debug.Log($"[McpClient] Received command: {command}");
-                }
-
-                // Process the command based on its type
-                var responseType = command["type"]?.ToString();
-                JObject response;
-
-                if (responseType == "resource")
-                {
-                    // Handle resource request
-                    response = this.ProcessResourceRequest(command);
-                }
-                else
-                {
-                    // Default to command execution
-                    response = this.ExecuteCommand(command);
-                }
-
-                // Send response
-                if (!this.IsConnected) return;
-
-                var responseJson = JsonConvert.SerializeObject(response);
-                var responseBytes = Encoding.UTF8.GetBytes(responseJson + "\n");
-                var stream = this.client.GetStream();
-                stream.Write(responseBytes, 0, responseBytes.Length);
-
-                if (DetailedLogs)
-                {
-                    Debug.Log($"[McpClient] Sent response: {responseJson}");
-                }
-            }
-            catch (JsonReaderException)
-            {
-                // If JSON is incomplete, store it for the next receive
-                this.incompleteData = fullData;
-
-                if (DetailedLogs)
-                {
-                    Debug.Log($"[McpClient] Received incomplete JSON data, buffering for next receive");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error processing command: {e.Message}");
-
-                // Send error response
-                if (this.IsConnected)
-                {
-                    var errorResponse = new JObject
-                    {
-                        ["status"] = "error",
-                        ["message"] = "【UnityLog】" + e.Message,
-                        ["id"] = commandId
-                    };
-
-                    var errorJson = JsonConvert.SerializeObject(errorResponse);
-                    var errorBytes = Encoding.UTF8.GetBytes(errorJson + "\n");
-                    var stream = this.client.GetStream();
-                    stream.Write(errorBytes, 0, errorBytes.Length);
+                    var command = JObject.Parse(line);
+                    commandId = command["id"]?.ToString();
 
                     if (DetailedLogs)
                     {
-                        Debug.Log($"[McpClient] Sent error response: {errorJson}");
+                        Debug.Log($"[McpClient] Received command: {command}");
+                    }
+
+                    // Process the command based on its type
+                    var responseType = command["type"]?.ToString();
+                    JObject response;
+
+                    if (responseType == "resource")
+                    {
+                        response = this.ProcessResourceRequest(command);
+                    }
+                    else
+                    {
+                        response = this.ExecuteCommand(command);
+                    }
+
+                    // Send response
+                    if (!this.IsConnected) return;
+
+                    var responseJson = JsonConvert.SerializeObject(response);
+                    var responseBytes = Encoding.UTF8.GetBytes(responseJson + "\n");
+                    var stream = this.client.GetStream();
+                    stream.Write(responseBytes, 0, responseBytes.Length);
+
+                    if (DetailedLogs)
+                    {
+                        Debug.Log($"[McpClient] Sent response: {responseJson}");
+                    }
+
+                    // Successfully processed, clear incomplete data
+                    this.incompleteData = "";
+                }
+                catch (JsonReaderException)
+                {
+                    if (isLastSegment)
+                    {
+                        // Last segment might be incomplete, buffer it
+                        this.incompleteData = line;
+
+                        if (DetailedLogs)
+                        {
+                            Debug.Log($"[McpClient] Received incomplete JSON data, buffering for next receive");
+                        }
+                    }
+                    else
+                    {
+                        // Non-last segment that fails to parse is malformed, log and skip
+                        Debug.LogWarning($"[McpClient] Skipping malformed JSON segment: {line}");
+                        this.incompleteData = "";
                     }
                 }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error processing command: {e.Message}");
 
-                this.incompleteData = ""; // Reset incomplete data
+                    // Send error response
+                    if (this.IsConnected)
+                    {
+                        var errorResponse = new JObject
+                        {
+                            ["status"] = "error",
+                            ["message"] = "【UnityLog】" + e.Message,
+                            ["id"] = commandId
+                        };
+
+                        var errorJson = JsonConvert.SerializeObject(errorResponse);
+                        var errorBytes = Encoding.UTF8.GetBytes(errorJson + "\n");
+                        var stream = this.client.GetStream();
+                        stream.Write(errorBytes, 0, errorBytes.Length);
+
+                        if (DetailedLogs)
+                        {
+                            Debug.Log($"[McpClient] Sent error response: {errorJson}");
+                        }
+                    }
+
+                    this.incompleteData = "";
+                }
             }
         }
 
@@ -706,13 +726,15 @@ namespace UnityMCP.Editor.Core
         /// <returns>The response to the request.</returns>
         private JObject ProcessResourceRequest(JObject request)
         {
+            var id = request["id"]?.ToString();
             var command = request["command"]?.ToString();
             if (string.IsNullOrEmpty(command))
             {
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "【UnityLog】" + "Missing command in resource request"
+                    ["message"] = "【UnityLog】" + "Missing command in resource request",
+                    ["id"] = id
                 };
             }
 
@@ -722,13 +744,12 @@ namespace UnityMCP.Editor.Core
                 return new JObject
                 {
                     ["status"] = "error",
-                    ["message"] = "【UnityLog】" + $"Invalid command format: {command}. Expected format: 'prefix.action'"
+                    ["message"] = "【UnityLog】" + $"Invalid command format: {command}. Expected format: 'prefix.action'",
+                    ["id"] = id
                 };
             }
 
             var resourceName = split[0];
-
-            var id = request["id"]?.ToString();
             var parameters = request["params"] as JObject ?? new JObject();
 
             if (string.IsNullOrEmpty(resourceName))
