@@ -111,10 +111,11 @@ export abstract class BaseResourceHandler implements IResourceHandler {
      * Sends a request to Unity, ensuring connection first.
      * @param command The command string (prefix.action).
      * @param parameters The parameters for the command.
+     * @param timeoutMs Optional timeout in milliseconds (defaults to UnityConnection.DEFAULT_TIMEOUT_MS).
      * @returns A Promise that resolves to the response from Unity.
      * @throws Error if the request fails or connection cannot be established.
      */
-    protected async sendUnityRequest(command: string, parameters: JObject): Promise<JObject> {
+    protected async sendUnityRequest(command: string, parameters: JObject, timeoutMs?: number): Promise<JObject> {
         await this.ensureUnityConnection();
 
         // Explicit non-null assertion since we've checked in ensureUnityConnection
@@ -122,6 +123,6 @@ export abstract class BaseResourceHandler implements IResourceHandler {
             command,
             type: "resource",
             params: parameters
-        });
+        }, timeoutMs);
     }
 }

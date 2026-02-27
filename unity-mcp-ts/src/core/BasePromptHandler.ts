@@ -59,17 +59,18 @@ export abstract class BasePromptHandler implements IPromptHandler {
      * Sends a request to Unity if needed, ensuring connection first.
      * @param command The command string (prefix.action).
      * @param parameters The parameters for the command.
+     * @param timeoutMs Optional timeout in milliseconds (defaults to UnityConnection.DEFAULT_TIMEOUT_MS).
      * @returns A Promise that resolves to the response from Unity.
      * @throws Error if the request fails or connection cannot be established.
      */
-    protected async sendUnityRequest(command: string, parameters: any): Promise<any> {
+    protected async sendUnityRequest(command: string, parameters: any, timeoutMs?: number): Promise<any> {
         await this.ensureUnityConnection();
 
         // Explicit non-null assertion since we've checked in ensureUnityConnection
         return this.unityConnection!.sendRequest({
             command,
             params: parameters
-        });
+        }, timeoutMs);
     }
 
     /**

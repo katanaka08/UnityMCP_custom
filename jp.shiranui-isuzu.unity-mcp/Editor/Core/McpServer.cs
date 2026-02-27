@@ -616,12 +616,16 @@ namespace UnityMCP.Editor.Core
         {
             // Add incoming data to any incomplete data from previous receives
             var fullData = this.incompleteData + data;
+            string commandId = null;
 
             try
             {
                 // Try to parse the data as JSON
                 var command = JObject.Parse(fullData);
                 this.incompleteData = ""; // Reset incomplete data if successful
+
+                // Extract ID early so it's available in catch blocks
+                commandId = command["id"]?.ToString();
 
                 if (DetailedLogs)
                 {
@@ -676,7 +680,8 @@ namespace UnityMCP.Editor.Core
                     var errorResponse = new JObject
                     {
                         ["status"] = "error",
-                        ["message"] = "【UnityLog】" + e.Message
+                        ["message"] = "【UnityLog】" + e.Message,
+                        ["id"] = commandId
                     };
 
                     var errorJson = JsonConvert.SerializeObject(errorResponse);

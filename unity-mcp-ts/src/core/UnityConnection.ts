@@ -401,12 +401,16 @@ export class UnityConnection extends EventEmitter {
         return this.clients.size > 0;
     }
 
+    /** Default timeout for requests in milliseconds. */
+    public static readonly DEFAULT_TIMEOUT_MS = 10000;
+
     /**
      * Sends a request to the active Unity client and waits for a response.
      * @param request The request object to send
+     * @param timeoutMs Optional timeout in milliseconds (defaults to DEFAULT_TIMEOUT_MS)
      * @returns A Promise that resolves with the response
      */
-    public async sendRequest(request: JObject): Promise<JObject> {
+    public async sendRequest(request: JObject, timeoutMs?: number): Promise<JObject> {
         if (!this.hasConnectedClients() || !this.activeClientId) {
             const error = new Error('No Unity clients connected');
             (error as any).code = McpErrorCode.ConnectionError;
@@ -443,13 +447,14 @@ export class UnityConnection extends EventEmitter {
                 });
 
                 // Set timeout to prevent hanging requests
+                const effectiveTimeout = timeoutMs ?? UnityConnection.DEFAULT_TIMEOUT_MS;
                 setTimeout(() => {
                     if (this.pendingRequests.has(id)) {
-                        console.error(`[ERROR] Request with ID ${id} timed out`);
+                        console.error(`[ERROR] Request with ID ${id} timed out after ${effectiveTimeout}ms`);
                         this.pendingRequests.delete(id);
-                        reject(new Error('Request timed out'));
+                        reject(new Error(`Request timed out after ${effectiveTimeout}ms`));
                     }
-                }, 30000); // 30 seconds timeout
+                }, effectiveTimeout);
             } catch (err) {
                 console.error(`[ERROR] Error sending request: ${err instanceof Error ? err.message : String(err)}`);
                 reject(err);
